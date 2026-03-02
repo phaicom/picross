@@ -2,7 +2,6 @@ import {
   definePreset,
   presetAttributify,
   presetIcons,
-  presetWebFonts,
   presetWind4,
 } from 'unocss'
 
@@ -30,6 +29,9 @@ export default definePreset({
     [/^btn-(.*)$/, ([, c]) => `bg-${c} hover:bg-${c}-60 active:bg-${c}-120 text-white disabled:bg-${c}-60`],
   ],
   theme: {
+    fontFamily: {
+      inter: 'Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+    },
     colors: {
       my: {
         blue: {
@@ -75,14 +77,5 @@ export default definePreset({
     presetWind4(),
     presetIcons(),
     presetAttributify(),
-    presetWebFonts({
-      provider: 'google',
-      fonts: {
-        inter: {
-          name: 'Inter',
-          weights: [200, 400, 600, 700],
-        },
-      },
-    }),
   ],
 })

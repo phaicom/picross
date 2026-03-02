@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  compatibilityDate: '2026-03-02',
   modules: [
     '@unocss/nuxt',
     '@pinia/nuxt',
@@ -23,7 +24,7 @@ export default defineNuxtConfig({
   vite: {
     build: {
       minify: 'esbuild',
-      cssMinify: 'esbuild',
+      cssMinify: 'lightningcss',
     },
   },
 })
