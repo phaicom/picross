@@ -25,6 +25,44 @@ function getCell(row: number, col: number): CellTypes {
 
   return gridRow[col] ?? CellTypes.Empty
 }
+
+function getHintRuns(values: number[]) {
+  const runs: number[] = []
+  let count = 0
+
+  for (const value of values) {
+    if (value === CellTypes.Fill) {
+      count += 1
+      continue
+    }
+
+    if (count > 0) {
+      runs.push(count)
+      count = 0
+    }
+  }
+
+  if (count > 0)
+    runs.push(count)
+
+  return runs
+}
+
+const rowHintCompletion = computed(() => {
+  return puzzle.clues.rows.map((rowClues, rowIndex) => {
+    const rowValues = puzzle.grid[rowIndex] ?? []
+    const runs = getHintRuns(rowValues)
+    return rowClues.map((clue, clueIndex) => runs[clueIndex] === clue)
+  })
+})
+
+const colHintCompletion = computed(() => {
+  return puzzle.clues.cols.map((colClues, colIndex) => {
+    const colValues = Array.from({ length: puzzle.height }, (_, rowIndex) => puzzle.grid[rowIndex]?.[colIndex] ?? CellTypes.Empty)
+    const runs = getHintRuns(colValues)
+    return colClues.map((clue, clueIndex) => runs[clueIndex] === clue)
+  })
+})
 </script>
 
 <template>
@@ -43,7 +81,7 @@ function getCell(row: number, col: number): CellTypes {
             v-for="(row, i) in puzzle.clues.rows" :key="i" flex="~ row justify-end items-center gap-2.5" p-1 h-14 min-w-15 border="odd:l-2 odd:t-2 last:odd:b-2 cell" bg="odd:cell" rounded="first:tl-lg last:bl-lg"
             :class="{ 'bg-my-light-violet-20! border-my-light-violet-20!': i === pointer.row }"
           >
-            <div v-for="(item, j) in row" :key="j">
+            <div v-for="(item, j) in row" :key="j" :class="{ 'hint-completion': rowHintCompletion[i]?.[j] }">
               {{ item }}
             </div>
           </div>
@@ -66,7 +104,7 @@ function getCell(row: number, col: number): CellTypes {
             v-for="(col, i) in puzzle.clues.cols" :key="i" flex="~ col justify-start items-center" leading-5 min-h-15 w-14 border="odd:l-2 odd:b-2 last:odd:r-2 cell" bg="odd:cell" rounded="first:bl-lg last:br-lg"
             :class="{ 'bg-my-light-violet-20! border-my-light-violet-20!': i === pointer.col }"
           >
-            <div v-for="(item, j) in col" :key="j">
+            <div v-for="(item, j) in col" :key="j" :class="{ 'hint-completion': colHintCompletion[i]?.[j] }">
               {{ item }}
             </div>
           </div>
@@ -83,5 +121,10 @@ function getCell(row: number, col: number): CellTypes {
 
 .box-shadow-board-main {
   box-shadow: 11px -9px 30px -12px #4b69ff1a;
+}
+
+.hint-completion {
+  color: #8e98bf;
+  text-decoration: line-through;
 }
 </style>
