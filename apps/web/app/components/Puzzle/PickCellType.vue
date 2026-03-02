@@ -10,7 +10,7 @@ function getCellBorder(cellType: CellTypes) {
 </script>
 
 <template>
-  <section>
+  <section w-full flex="~ justify-center">
     <div p-4 rounded-lg bg-white flex="~ row gap-4" class="shadow-cell-type">
       <div v-for="(cellType, i) in cellTypes" :key="i" text-7 border-2px h-10 w-10 cursor-pointer flex="~ items-center justify-center" :class="getCellBorder(cellType)" @click="pointer.setCellType(cellType)">
         <PuzzleCellType :cell-type="cellType" />

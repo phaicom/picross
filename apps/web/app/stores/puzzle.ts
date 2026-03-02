@@ -36,6 +36,13 @@ export const usePuzzleStore = defineStore('puzzle', () => {
 
   let interval: ReturnType<typeof setInterval> | null = null
 
+  function clearSolverInterval() {
+    if (!interval)
+      return
+    clearInterval(interval)
+    interval = null
+  }
+
   const isWin = computed(() => {
     if (!grid.length || !solution.length)
       return false
@@ -60,6 +67,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   })
 
   function reset(puzzle?: Puzzle) {
+    clearSolverInterval()
     const game = puzzle ? new Game(puzzle) : new Game()
     catalogue.value = game.puzzle.catalogue
     title.value = game.puzzle.title
@@ -79,6 +87,11 @@ export const usePuzzleStore = defineStore('puzzle', () => {
     solveSteps.push(...game.solveSteps)
     solverStatus.value = game.solverStatus
     solverTimedOut.value = false
+    isStartSolver.value = false
+  }
+
+  function stopSolver() {
+    clearSolverInterval()
     isStartSolver.value = false
   }
 
@@ -104,8 +117,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
       return
     }
 
-    if (interval)
-      clearInterval(interval)
+    clearSolverInterval()
 
     let counter = -1
     isStartSolver.value = true
@@ -115,8 +127,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
       resetBoard(solveSteps[counter])
       if (counter === solveSteps.length - 1) {
         resetBoard(trimGrid(grid))
-        if (interval)
-          clearInterval(interval)
+        clearSolverInterval()
         isStartSolver.value = false
       }
     }, 300)
@@ -160,6 +171,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
           maxIterations: Math.max(area * 3, 64),
           maxBacktrackNodes: Math.max(area * 8, 256),
           timeoutMs: 120,
+          maxRecordedSteps: 80,
         }
       case 'deep':
         return {
@@ -167,6 +179,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
           maxIterations: Math.max(area * 12, 512),
           maxBacktrackNodes: Math.max(area * 400, 20000),
           timeoutMs: 5000,
+          maxRecordedSteps: 240,
         }
       default:
         return {
@@ -174,6 +187,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
           maxIterations: Math.max(area * 6, 256),
           maxBacktrackNodes: Math.max(area * 64, 4096),
           timeoutMs: 1000,
+          maxRecordedSteps: 140,
         }
     }
   }
@@ -188,8 +202,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   }
 
   onUnmounted(() => {
-    if (interval)
-      clearInterval(interval)
+    clearSolverInterval()
   })
 
   return {
@@ -212,6 +225,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
     reset,
     initialize,
     resetBoard,
+    stopSolver,
     startSolver,
     setSolverPreset,
     selectPuzzle,

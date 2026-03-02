@@ -32,6 +32,7 @@ function pad(num: number) {
 }
 
 function resetBoard() {
+  puzzle.stopSolver()
   stopTimer()
   startTimer()
   puzzle.resetBoard()
@@ -86,7 +87,7 @@ onUnmounted(() => {
         <button
           v-for="preset in presets"
           :key="preset.id"
-          text="[10px] my-dark-violet-70" tracking="[0.04em]" font-700 px-0 rounded-md bg-transparent h-6 w-12 uppercase transition-colors class="disabled:opacity-60 disabled:cursor-not-allowed"
+          text="[10px] my-dark-violet-70" tracking="[0.04em]" font-700 px-2 rounded-md bg-transparent h-6 min-w-12 uppercase transition-colors class="disabled:opacity-60 disabled:cursor-not-allowed"
           :class="{ 'bg-my-blue text-white': puzzle.solverPreset === preset.id }"
           :disabled="puzzle.isStartSolver"
           @click="puzzle.setSolverPreset(preset.id)"

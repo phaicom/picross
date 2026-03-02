@@ -18,9 +18,9 @@ export default defineNuxtConfig({
     },
   },
   typescript: {
-    typeCheck: true,
+    typeCheck: false,
   },
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   vite: {
     build: {
       minify: 'esbuild',

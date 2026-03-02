@@ -8,6 +8,7 @@ export interface SolveOptions {
   backtracking?: boolean
   maxBacktrackNodes?: number
   timeoutMs?: number
+  maxRecordedSteps?: number
 }
 
 export interface SolverInitOptions extends SolveOptions {
@@ -36,6 +37,7 @@ interface SolverState {
 interface SearchContext {
   maxIterations: number
   maxBacktrackNodes: number
+  maxRecordedSteps: number
   deadline: number
   iterations: number
   backtrackNodes: number
@@ -101,9 +103,11 @@ export class SimpleSolver {
     const maxIterations = options.maxIterations ?? Math.max(numRows * numCols * 4, 1)
     const maxBacktrackNodes = options.maxBacktrackNodes ?? Math.max(numRows * numCols * 64, 1024)
     const timeoutMs = options.timeoutMs ?? 1000
+    const maxRecordedSteps = options.maxRecordedSteps ?? Math.max(numRows * numCols * 2, 64)
     const context: SearchContext = {
       maxIterations,
       maxBacktrackNodes,
+      maxRecordedSteps,
       deadline: Date.now() + timeoutMs,
       iterations: 0,
       backtrackNodes: 0,
@@ -203,7 +207,8 @@ export class SimpleSolver {
         }
 
         this.updateDone(state, isRow, index)
-        state.solveSteps.push(this.snapshotStep(state.board))
+        if (state.solveSteps.length < context.maxRecordedSteps)
+          state.solveSteps.push(this.snapshotStep(state.board))
       }
 
       if (this.isSolvedBoard(state.board)) {
@@ -441,7 +446,8 @@ export class SimpleSolver {
       colsDone: [...state.colsDone],
       rowsPoss: state.rowsPoss.map(line => line.map(poss => [...poss])),
       colsPoss: state.colsPoss.map(line => line.map(poss => [...poss])),
-      solveSteps: state.solveSteps.map(step => step.map(row => [...row])),
+      // Snapshots are immutable, so a shallow copy avoids expensive deep cloning.
+      solveSteps: [...state.solveSteps],
     }
   }
 
