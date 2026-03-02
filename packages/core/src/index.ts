@@ -1,4 +1,5 @@
 import type { Puzzle } from '@picross/shared'
+import type { SolverStatus } from './solver'
 import { SimpleSolver } from './solver'
 
 export class Game {
@@ -6,6 +7,7 @@ export class Game {
   grid: number[][]
   solution: number[][]
   solveSteps: number[][][]
+  solverStatus: SolverStatus
 
   constructor(puzzle?: Puzzle) {
     this.puzzle = {
@@ -24,6 +26,7 @@ export class Game {
     this.grid = []
     this.solution = []
     this.solveSteps = []
+    this.solverStatus = 'stalled'
 
     if (puzzle)
       this.setPuzzle(puzzle)
@@ -46,6 +49,7 @@ export class Game {
     this.grid = []
     this.solution = []
     this.solveSteps = []
+    this.solverStatus = 'stalled'
   }
 
   setPuzzle(puzzle: Puzzle) {
@@ -56,8 +60,10 @@ export class Game {
 
     // generate solution base on puzzle clues
     // solver function goes here
-    const solver = new SimpleSolver(this.puzzle.clues)
-    this.solution = solver.board
-    this.solveSteps = solver.solveSteps
+    const solver = new SimpleSolver(this.puzzle.clues, { autoSolve: false })
+    const result = solver.solve()
+    this.solution = result.board
+    this.solveSteps = result.solveSteps
+    this.solverStatus = result.status
   }
 }

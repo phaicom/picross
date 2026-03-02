@@ -7,7 +7,11 @@ export class BaseParser implements Parser {
   puzzle: Puzzle
 
   constructor() {
-    this.puzzle = {
+    this.puzzle = this.createEmptyPuzzle()
+  }
+
+  protected createEmptyPuzzle(): Puzzle {
+    return {
       catalogue: '',
       title: '',
       author: '',
@@ -19,6 +23,10 @@ export class BaseParser implements Parser {
         cols: [],
       },
     }
+  }
+
+  protected resetPuzzle(): void {
+    this.puzzle = this.createEmptyPuzzle()
   }
 
   parse(_: string) {

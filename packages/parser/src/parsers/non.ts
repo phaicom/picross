@@ -13,7 +13,10 @@ export class NonParser extends BaseParser {
    * @throws {Error} If the non file key is incorrect.
    */
   parse(input: string): Puzzle {
-    const sections = input.split('\n\n')
+    this.resetPuzzle()
+
+    const normalizedInput = input.replace(/\r\n/g, '\n')
+    const sections = normalizedInput.split(/\n\s*\n/).filter(section => section.trim().length > 0)
     if (sections.length < 3)
       throw new Error('Incorrect non file structure')
 
@@ -24,8 +27,15 @@ export class NonParser extends BaseParser {
 
     this.parseDataSection(dataSection)
     this.parseCluesSection(cluesSections)
+    this.validateParsedPuzzle()
 
-    return this.puzzle
+    return {
+      ...this.puzzle,
+      clues: {
+        rows: this.puzzle.clues.rows.map(row => [...row]),
+        cols: this.puzzle.clues.cols.map(col => [...col]),
+      },
+    }
   }
 
   /**
@@ -34,24 +44,40 @@ export class NonParser extends BaseParser {
    * @throws {Error} If the non file key is incorrect.
    */
   private parseDataSection(data: string): void {
-    for (const line of data.split('\n')) {
-      const [key, value] = line.indexOf('"') > 0 ? line.split('"') : line.split(' ')
-      if (key === undefined || value === undefined)
-        throw new Error('Incorrect non file key')
+    const lines = data.split('\n').map(line => line.trim()).filter(Boolean)
+    for (const [index, line] of lines.entries()) {
+      const separatorIndex = line.search(/\s/)
+      if (separatorIndex <= 0)
+        throw new Error(`Incorrect non file key at metadata line ${index + 1}`)
 
-      const trimmedKey = key.trim()
-      const trimmedValue = value.trim()
-
-      if (trimmedKey in this.puzzle)
-        (this.puzzle as any)[trimmedKey] = trimmedValue
-      else if (trimmedKey === 'by')
-        this.puzzle.author = trimmedValue
-      else
-        throw new Error('Incorrect non file key')
+      const key = line.slice(0, separatorIndex).trim().toLowerCase()
+      const rawValue = line.slice(separatorIndex).trim()
+      const value = rawValue.startsWith('"')
+        ? this.parseQuotedValue(rawValue, key, index)
+        : rawValue
+      switch (key) {
+        case 'catalogue':
+          this.puzzle.catalogue = value
+          break
+        case 'title':
+          this.puzzle.title = value
+          break
+        case 'copyright':
+          this.puzzle.copyright = value
+          break
+        case 'by':
+          this.puzzle.author = value
+          break
+        case 'width':
+          this.puzzle.width = this.parsePositiveInteger(value, 'width')
+          break
+        case 'height':
+          this.puzzle.height = this.parsePositiveInteger(value, 'height')
+          break
+        default:
+          throw new Error(`Incorrect non file key '${key}'`)
+      }
     }
-
-    this.puzzle.width = Number(this.puzzle.width)
-    this.puzzle.height = Number(this.puzzle.height)
   }
 
   /**
@@ -62,15 +88,71 @@ export class NonParser extends BaseParser {
   private parseCluesSection(sections: string[]): void {
     this.puzzle.clues = { rows: [], cols: [] }
 
-    sections.forEach((section) => {
-      const lines = section.split('\n')
-      const key = lines.shift()
+    sections.forEach((section, sectionIndex) => {
+      const lines = section.split('\n').map(line => line.trim())
+      const key = lines.shift()?.toLowerCase()
 
       if (!['rows', 'columns'].includes(key || ''))
-        throw new Error('Incorrect non file key')
+        throw new Error(`Incorrect non file key in clues section ${sectionIndex + 1}`)
 
-      const clues = lines.map(line => line.split(',').map(Number))
+      const clues = lines.filter(Boolean).map((line, lineIndex) => this.parseClueLine(line, key as 'rows' | 'columns', lineIndex))
       this.puzzle.clues[key === 'rows' ? 'rows' : 'cols'] = clues
     })
+  }
+
+  private parsePositiveInteger(value: string, key: 'width' | 'height'): number {
+    const parsed = Number(value)
+    if (!Number.isInteger(parsed) || parsed <= 0)
+      throw new Error(`Invalid ${key}: ${value}`)
+    return parsed
+  }
+
+  private parseQuotedValue(value: string, key: string, lineIndex: number): string {
+    if (!value.endsWith('"') || value.length < 2)
+      throw new Error(`Invalid quoted value for '${key}' at metadata line ${lineIndex + 1}`)
+
+    return value.slice(1, -1)
+  }
+
+  private parseClueLine(line: string, section: 'rows' | 'columns', lineIndex: number): number[] {
+    if (line === '0')
+      return []
+
+    const values = line.split(',').map(part => part.trim())
+    if (values.some(part => part.length === 0))
+      throw new Error(`Invalid clue format in ${section} line ${lineIndex + 1}`)
+
+    const clues = values.map((part) => {
+      const parsed = Number(part)
+      if (!Number.isInteger(parsed) || parsed <= 0)
+        throw new Error(`Invalid clue value '${part}' in ${section} line ${lineIndex + 1}`)
+      return parsed
+    })
+
+    return clues
+  }
+
+  private validateParsedPuzzle(): void {
+    const { width, height, clues } = this.puzzle
+    if (width <= 0 || height <= 0)
+      throw new Error('Width and height must be positive integers')
+
+    if (clues.rows.length !== height)
+      throw new Error(`Rows clues count ${clues.rows.length} does not match height ${height}`)
+
+    if (clues.cols.length !== width)
+      throw new Error(`Columns clues count ${clues.cols.length} does not match width ${width}`)
+
+    clues.rows.forEach((line, index) => this.validateLineFit(line, width, 'rows', index))
+    clues.cols.forEach((line, index) => this.validateLineFit(line, height, 'columns', index))
+  }
+
+  private validateLineFit(line: number[], limit: number, section: 'rows' | 'columns', lineIndex: number): void {
+    if (line.length === 0)
+      return
+
+    const required = line.reduce((sum, n) => sum + n, 0) + line.length - 1
+    if (required > limit)
+      throw new Error(`Clues exceed ${section} length at line ${lineIndex + 1}`)
   }
 }

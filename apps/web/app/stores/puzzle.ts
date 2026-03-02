@@ -14,7 +14,7 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   const solveSteps = reactive<number[][][]>([])
   const isStartSolver = ref(false)
 
-  let interval: NodeJS.Timeout | null = null
+  let interval: ReturnType<typeof setInterval> | null = null
 
   const isWin = computed(() => {
     if (!grid.length || !solution.length)
@@ -39,8 +39,8 @@ export const usePuzzleStore = defineStore('puzzle', () => {
     return true
   })
 
-  function reset(puzzle: Puzzle = {} as Puzzle) {
-    const game = new Game(puzzle)
+  function reset(puzzle?: Puzzle) {
+    const game = puzzle ? new Game(puzzle) : new Game()
     catalogue.value = game.puzzle.catalogue
     title.value = game.puzzle.title
     author.value = game.puzzle.author
@@ -67,7 +67,15 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   }
 
   function startSolver() {
-    clearInterval(interval as NodeJS.Timeout)
+    if (!solveSteps.length) {
+      isStartSolver.value = false
+      resetBoard(trimGrid(solution))
+      return
+    }
+
+    if (interval)
+      clearInterval(interval)
+
     let counter = -1
     isStartSolver.value = true
     resetBoard()
@@ -76,7 +84,8 @@ export const usePuzzleStore = defineStore('puzzle', () => {
       resetBoard(solveSteps[counter])
       if (counter === solveSteps.length - 1) {
         resetBoard(trimGrid(grid))
-        clearInterval(interval as NodeJS.Timeout)
+        if (interval)
+          clearInterval(interval)
         isStartSolver.value = false
       }
     }, 300)

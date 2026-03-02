@@ -4,8 +4,6 @@ import { fileURLToPath } from 'node:url'
 import { NonParser } from './parsers'
 import { readFileSync } from './utils'
 
-const nonParser = new NonParser()
-
 /**
  * Parses a file and returns a Puzzle object.
  *
@@ -20,7 +18,7 @@ export function parser(path: string | URL): Puzzle {
 
   switch (extName) {
     case 'non':
-      return nonParser.parse(input.toString())
+      return new NonParser().parse(input.toString())
 
     default:
       throw new Error(`${extName} file is not supported`)
