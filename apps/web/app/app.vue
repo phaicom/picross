@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import '@unocss/reset/tailwind.css'
-import './styles/base.css'
+import './assets/css/base.css'
 </script>
 
 <template>
