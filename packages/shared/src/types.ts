@@ -6,6 +6,7 @@ export interface Puzzle {
   title: string
   author: string
   copyright: string
+  difficulty?: 'easy' | 'medium' | 'hard'
   width: number
   height: number
   clues: Clues

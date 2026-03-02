@@ -1,5 +1,15 @@
+import type { SolveOptions, SolverStatus } from '@picross/core'
 import type { Clues, Puzzle } from '@picross/shared'
-import { Game } from '@picross/core'
+import { Game, SimpleSolver } from '@picross/core'
+import { sample } from '@picross/shared'
+
+type SolverPreset = 'fast' | 'normal' | 'deep'
+type Difficulty = NonNullable<Puzzle['difficulty']>
+
+interface PuzzleChoice {
+  index: number
+  label: string
+}
 
 export const usePuzzleStore = defineStore('puzzle', () => {
   const catalogue = ref('')
@@ -13,6 +23,16 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   const solution = reactive<number[][]>([])
   const solveSteps = reactive<number[][][]>([])
   const isStartSolver = ref(false)
+  const solverPreset = ref<SolverPreset>('normal')
+  const solverStatus = ref<SolverStatus>('stalled')
+  const solverTimedOut = ref(false)
+  const currentPuzzleIndex = ref(0)
+  const puzzleChoices = computed<PuzzleChoice[]>(() => {
+    return sample.map((p, index) => ({
+      index,
+      label: `${formatDifficulty(p.difficulty).charAt(0)}${index + 1} ${p.title || p.catalogue}`,
+    }))
+  })
 
   let interval: ReturnType<typeof setInterval> | null = null
 
@@ -57,7 +77,16 @@ export const usePuzzleStore = defineStore('puzzle', () => {
     solution.push(...game.solution)
     solveSteps.splice(0, solveSteps.length)
     solveSteps.push(...game.solveSteps)
+    solverStatus.value = game.solverStatus
+    solverTimedOut.value = false
     isStartSolver.value = false
+  }
+
+  function initialize() {
+    if (width.value > 0)
+      return
+
+    selectPuzzle(0)
   }
 
   function resetBoard(g: number[][] = []) {
@@ -67,6 +96,8 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   }
 
   function startSolver() {
+    solveByPreset()
+
     if (!solveSteps.length) {
       isStartSolver.value = false
       resetBoard(trimGrid(solution))
@@ -91,8 +122,69 @@ export const usePuzzleStore = defineStore('puzzle', () => {
     }, 300)
   }
 
+  function setSolverPreset(preset: SolverPreset) {
+    solverPreset.value = preset
+  }
+
+  function selectPuzzle(index: number) {
+    const next = sample[index]
+    if (!next)
+      return
+
+    currentPuzzleIndex.value = index
+    reset(next)
+  }
+
+  function solveByPreset() {
+    const options = getPresetOptions(solverPreset.value)
+    const solver = new SimpleSolver({
+      rows: clues.rows.map(row => [...row]),
+      cols: clues.cols.map(col => [...col]),
+    }, { autoSolve: false })
+    const result = solver.solve(options)
+
+    solution.splice(0, solution.length)
+    solution.push(...result.board)
+    solveSteps.splice(0, solveSteps.length)
+    solveSteps.push(...result.solveSteps)
+    solverStatus.value = result.status
+    solverTimedOut.value = result.timedOut
+  }
+
+  function getPresetOptions(preset: SolverPreset): SolveOptions {
+    const area = Math.max(width.value * height.value, 1)
+    switch (preset) {
+      case 'fast':
+        return {
+          backtracking: true,
+          maxIterations: Math.max(area * 3, 64),
+          maxBacktrackNodes: Math.max(area * 8, 256),
+          timeoutMs: 120,
+        }
+      case 'deep':
+        return {
+          backtracking: true,
+          maxIterations: Math.max(area * 12, 512),
+          maxBacktrackNodes: Math.max(area * 400, 20000),
+          timeoutMs: 5000,
+        }
+      default:
+        return {
+          backtracking: true,
+          maxIterations: Math.max(area * 6, 256),
+          maxBacktrackNodes: Math.max(area * 64, 4096),
+          timeoutMs: 1000,
+        }
+    }
+  }
+
   function trimGrid(g: number[][]): number[][] {
     return g.map(row => row.map(col => col === 1 ? 1 : 0))
+  }
+
+  function formatDifficulty(difficulty?: Puzzle['difficulty']): string {
+    const level: Difficulty = difficulty ?? 'medium'
+    return level.charAt(0).toUpperCase() + level.slice(1)
   }
 
   onUnmounted(() => {
@@ -100,7 +192,30 @@ export const usePuzzleStore = defineStore('puzzle', () => {
       clearInterval(interval)
   })
 
-  return { catalogue, title, author, width, height, clues, grid, solution, solveSteps, isStartSolver, isWin, reset, resetBoard, startSolver }
+  return {
+    catalogue,
+    title,
+    author,
+    width,
+    height,
+    clues,
+    grid,
+    solution,
+    solveSteps,
+    isStartSolver,
+    isWin,
+    solverPreset,
+    solverStatus,
+    solverTimedOut,
+    currentPuzzleIndex,
+    puzzleChoices,
+    reset,
+    initialize,
+    resetBoard,
+    startSolver,
+    setSolverPreset,
+    selectPuzzle,
+  }
 })
 
 if (import.meta.hot)

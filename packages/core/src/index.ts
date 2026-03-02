@@ -2,6 +2,8 @@ import type { Puzzle } from '@picross/shared'
 import type { SolverStatus } from './solver'
 import { SimpleSolver } from './solver'
 
+export * from './solver'
+
 export class Game {
   puzzle: Puzzle
   grid: number[][]

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { CellTypes, sample } from '@picross/shared'
+import { CellTypes } from '@picross/shared'
 
 const pointer = usePointerStore()
 const puzzle = usePuzzleStore()
-puzzle.reset(sample[0])
+puzzle.initialize()
 
 function showSelectedCell(row: number, col: number) {
   return pointer.row === row && pointer.col === col
@@ -35,7 +35,7 @@ function getCell(row: number, col: number): CellTypes {
       </PuzzleTemp>
     </Transition>
     <!-- board wrapper -->
-    <div class="w-[calc(100vw-3rem)]" flex="~ justify-center" select-none overflow-auto max="h-60vh lg:h-55vh">
+    <div class="w-[calc(100vw-3rem)]" flex="~ justify-center" select-none overflow-auto max="h-68vh lg:h-58vh">
       <div flex="~ col" w-min font="400">
         <div flex="~ row">
           <!-- hints rows -->
