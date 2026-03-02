@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "unbuild",
-    "dev": "unbuild --stub",
+    "dev": "unbuild --watch",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },

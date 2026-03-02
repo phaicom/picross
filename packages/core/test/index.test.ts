@@ -1,5 +1,5 @@
-import { sample } from '@picross/shared'
 import type { Puzzle } from '@picross/shared'
+import { sample } from '@picross/shared'
 import { describe, expect, it } from 'vitest'
 import { Game } from '../src'
 

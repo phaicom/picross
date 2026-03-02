@@ -3,7 +3,6 @@ export default defineNuxtConfig({
   modules: [
     '@unocss/nuxt',
     '@pinia/nuxt',
-    '@nuxt/test-utils/module',
     '@nuxt/image',
   ],
   app: {
@@ -25,11 +24,6 @@ export default defineNuxtConfig({
     build: {
       minify: 'esbuild',
       cssMinify: 'esbuild',
-    },
-    optimizeDeps: {
-      include: [
-        'typescript',
-      ],
     },
   },
 })

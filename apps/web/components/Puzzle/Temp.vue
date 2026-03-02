@@ -1,6 +1,6 @@
 <template>
-  <div flex="~ row gap-2 justify-center" mb-4 text-2xl>
-    <h1 class="bg-rainbow animate-bg bg-clip-text text-center text-transparent font-bold uppercase">
+  <div flex="~ row gap-2 justify-center" text-2xl mb-4>
+    <h1 class="bg-rainbow animate-bg text-transparent font-bold text-center uppercase bg-clip-text">
       <slot />
     </h1>
     <span>🏆🎖️🫡</span>

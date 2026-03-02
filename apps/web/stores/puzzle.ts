@@ -1,5 +1,5 @@
-import { Game } from '@picross/core'
 import type { Clues, Puzzle } from '@picross/shared'
+import { Game } from '@picross/core'
 
 export const usePuzzleStore = defineStore('puzzle', () => {
   const catalogue = ref('')

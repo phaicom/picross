@@ -48,12 +48,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section bg="my-light-violet-10 cover bottom 2xl:center no-repeat [url(/timer-bg.svg)]" h-62px w-full select-none rounded-lg p-4>
+  <section bg="my-light-violet-10 cover bottom 2xl:center no-repeat [url(/timer-bg.svg)]" p-4 rounded-lg h-62px w-full select-none>
     <div flex="~ items-center">
       <span text-24px font-600>{{ time }}</span>
       <div ml-auto flex="~ row gap-2">
         <button btn="~ my-blue" uppercase :disabled="puzzle.isStartSolver" @click="startSolver()">
-          <div v-if="puzzle.isStartSolver" i-ph-spinner-bold animate-spin text-lg />
+          <div v-if="puzzle.isStartSolver" i-ph-spinner-bold text-lg animate-spin />
           <span v-else>solve</span>
         </button>
         <button btn="~ my-red" uppercase @click="resetBoard()">

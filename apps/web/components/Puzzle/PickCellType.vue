@@ -11,8 +11,8 @@ function getCellBorder(cellType: CellTypes) {
 
 <template>
   <section>
-    <div rounded-lg bg-white p-4 flex="~ row gap-4" class="shadow-cell-type">
-      <div v-for="(cellType, i) in cellTypes" :key="i" h-10 w-10 cursor-pointer border-2px text-7 flex="~ items-center justify-center" :class="getCellBorder(cellType)" @click="pointer.setCellType(cellType)">
+    <div p-4 rounded-lg bg-white flex="~ row gap-4" class="shadow-cell-type">
+      <div v-for="(cellType, i) in cellTypes" :key="i" text-7 border-2px h-10 w-10 cursor-pointer flex="~ items-center justify-center" :class="getCellBorder(cellType)" @click="pointer.setCellType(cellType)">
         <PuzzleCellType :cell-type="cellType" />
       </div>
     </div>

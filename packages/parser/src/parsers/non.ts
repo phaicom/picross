@@ -17,8 +17,13 @@ export class NonParser extends BaseParser {
     if (sections.length < 3)
       throw new Error('Incorrect non file structure')
 
-    this.parseDataSection(sections[0])
-    this.parseCluesSection(sections.slice(1, 3))
+    const dataSection = sections[0]
+    const cluesSections = sections.slice(1, 3)
+    if (!dataSection || cluesSections.length < 2)
+      throw new Error('Incorrect non file structure')
+
+    this.parseDataSection(dataSection)
+    this.parseCluesSection(cluesSections)
 
     return this.puzzle
   }
@@ -31,6 +36,9 @@ export class NonParser extends BaseParser {
   private parseDataSection(data: string): void {
     for (const line of data.split('\n')) {
       const [key, value] = line.indexOf('"') > 0 ? line.split('"') : line.split(' ')
+      if (key === undefined || value === undefined)
+        throw new Error('Incorrect non file key')
+
       const trimmedKey = key.trim()
       const trimmedValue = value.trim()
 

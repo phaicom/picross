@@ -18,12 +18,12 @@ export function* range(start: number, end: number): Iterable<number> {
  * @returns {T} - The last element of the array.
  * @throws {Error} - If the array is empty.
  */
-export function last<T>(arr: T[]) {
+export function last<T>(arr: T[]): T {
   const length = arr.length
   if (length === 0)
     throw new Error('Array is empty')
 
-  return arr[length - 1]
+  return arr[length - 1]!
 }
 
 /**
@@ -58,8 +58,14 @@ export function* combination<T>(arr: T[], len: number): Iterable<T[]> {
   const length = arr.length
   const combinations: T[][] = []
 
-  for (const index of _combination(length, len))
-    combinations.push(index.map(i => arr[i]))
+  for (const index of _combination(length, len)) {
+    combinations.push(index.map((i) => {
+      if (!(i in arr))
+        throw new Error(`Index ${i} is out of bounds`)
+
+      return arr[i] as T
+    }))
+  }
 
   yield* combinations
 }
