@@ -43,7 +43,7 @@ function* _combination(ub: number, len: number, cur: number[] = []): IterableIte
   const start = index ? last(cur) + 1 : 0
   const end = ub - len + index
   for (const next of range(start, end + 1))
-    yield * _combination(ub, len, cur.concat(next))
+    yield* _combination(ub, len, cur.concat(next))
 }
 
 /**
@@ -61,5 +61,5 @@ export function* combination<T>(arr: T[], len: number): Iterable<T[]> {
   for (const index of _combination(length, len))
     combinations.push(index.map(i => arr[i]))
 
-  yield * combinations
+  yield* combinations
 }
