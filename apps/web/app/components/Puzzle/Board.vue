@@ -54,9 +54,7 @@ function getCell(row: number, col: number): CellTypes {
             <!-- row -->
             <div v-for="(_, i) in puzzle.height" :key="i" flex="~ row justify-end items-center" min-w-min>
               <div v-for="(_cell, j) in puzzle.width" :key="j" border="l-2 t-2 last:r-2 cell" flex="~ justify-center items-center" h-14 w-14 cursor-pointer relative :class="{ 'border-b-2': i === puzzle.height - 1 }" @click="setCell(i, j, pointer.cellType)" @mouseover="pointer.setPointLocation(i, j)">
-                <ClientOnly>
-                  <PuzzleCellType :cell-type="getCell(i, j)" text-11 />
-                </ClientOnly>
+                <PuzzleCellType :cell-type="getCell(i, j)" text-11 />
                 <div v-if="showSelectedCell(i, j)" border="2 my-light-violet-20" absolute class="h-[calc(100%+4px)] w-[calc(100%+4px)] -left-2px -top-2px" z-10 />
               </div>
             </div>

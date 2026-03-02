@@ -18,16 +18,13 @@ catalog:
   '@commitlint/config-conventional': ^20.4.2
   '@iconify-json/ph': ^1.2.2
   '@nuxt/image': ^2.0.0
-  '@nuxt/test-utils': ^4.0.0
   '@pinia/nuxt': ^0.11.3
   '@types/lodash-es': ^4.17.12
   '@unocss/eslint-plugin': ^66.6.3
   '@unocss/nuxt': ^66.6.2
-  '@vue/test-utils': ^2.4.6
   eslint: ^10.0.2
   eslint-plugin-format: ^2.0.1
   esno: ^4.8.0
-  happy-dom: ^20.7.0
   lint-staged: ^16.3.1
   lodash-es: ^4.17.23
   nuxt: ^4.3.1
@@ -38,7 +35,6 @@ catalog:
   vite: ^7.3.1
   vitest: ^4.0.18
   vue: ^3.5.29
-  vue-router: ^5.0.3
   vue-tsc: ^3.2.5
 onlyBuiltDependencies:
   - simple-git-hooks

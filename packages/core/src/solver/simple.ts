@@ -39,6 +39,7 @@ export class SimpleSolver {
     const colsPoss = this.createPossibilities(this.clues.cols, numRows)
 
     while (!this.solved) {
+      let madeProgress = false
       // Order by lowest by the possibilities array that are not marked as done
       const lowestRow = this.selectIndexNotDone(rowsPoss, 1)
       const lowestCol = this.selectIndexNotDone(colsPoss, 0)
@@ -61,6 +62,7 @@ export class SimpleSolver {
 
             if (row[colIndex] === 0) {
               row[colIndex] = val
+              madeProgress = true
               if (isRow) {
                 const colPoss = colsPoss[colIndex]
                 if (!colPoss)
@@ -83,6 +85,10 @@ export class SimpleSolver {
       // replace -1 with 0 in board
       this.board = this.board.map(row => row.map(cell => (cell === -1 ? 0 : cell)))
       this.checkSolved()
+
+      // Stop when the simple strategy cannot infer additional cells.
+      if (!madeProgress)
+        break
     }
   }
 

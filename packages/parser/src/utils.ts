@@ -10,11 +10,12 @@ const ROOT_PATH = new URL(`${path.dirname(import.meta.url)}`).pathname
  * @param options - The encoding or options object.
  * @returns The contents of the file.
  */
-export function readFileSync(filePath: fs.PathOrFileDescriptor, options?:
+export function readFileSync(filePath: string | URL, options?:
   | {
     encoding: BufferEncoding
     flag?: string | undefined
   }
   | BufferEncoding) {
-  return fs.readFileSync(path.resolve(ROOT_PATH, filePath.toString()), options)
+  const resolvedPath = path.resolve(ROOT_PATH, filePath.toString())
+  return fs.readFileSync(resolvedPath, options)
 }

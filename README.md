@@ -1,75 +1,44 @@
-# Nuxt 3 Minimal Starter
+# Picross
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Picross puzzle project built as a `pnpm` + `turbo` monorepo.
 
-## Setup
+## Workspace Layout
 
-Make sure to install the dependencies:
+- `apps/web`: Nuxt web app UI.
+- `packages/core`: Puzzle game and solver logic.
+- `packages/parser`: `.non` parser.
+- `packages/shared`: Shared types, helpers, and sample puzzles.
+
+## Requirements
+
+- Node.js `>=22`
+- `pnpm` (version from `packageManager` in root `package.json`)
+
+## Install
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Run
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+pnpm dev
 ```
 
-## Production
+The web app runs on `http://localhost:3000`.
 
-Build the application for production:
+## Quality Checks
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
 
-Locally preview production build:
+## Build and Preview
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+pnpm build
+pnpm preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

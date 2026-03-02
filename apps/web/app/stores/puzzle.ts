@@ -17,7 +17,26 @@ export const usePuzzleStore = defineStore('puzzle', () => {
   let interval: NodeJS.Timeout | null = null
 
   const isWin = computed(() => {
-    return trimGrid.length > 0 && solution.length > 0 && JSON.stringify(trimGrid(grid)) === JSON.stringify(solution)
+    if (!grid.length || !solution.length)
+      return false
+
+    if (grid.length !== solution.length)
+      return false
+
+    for (let row = 0; row < grid.length; row += 1) {
+      const gridRow = grid[row]
+      const solutionRow = solution[row]
+      if (!gridRow || !solutionRow || gridRow.length !== solutionRow.length)
+        return false
+
+      for (let col = 0; col < gridRow.length; col += 1) {
+        const normalized = gridRow[col] === 1 ? 1 : 0
+        if (normalized !== solutionRow[col])
+          return false
+      }
+    }
+
+    return true
   })
 
   function reset(puzzle: Puzzle = {} as Puzzle) {

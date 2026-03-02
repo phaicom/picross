@@ -1,6 +1,6 @@
 import type { Puzzle } from '@picross/shared'
-import type { PathOrFileDescriptor } from 'node:fs'
 import { extname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { NonParser } from './parsers'
 import { readFileSync } from './utils'
 
@@ -9,13 +9,14 @@ const nonParser = new NonParser()
 /**
  * Parses a file and returns a Puzzle object.
  *
- * @param path - The path or file descriptor of the file to parse.
+ * @param path - The path or file URL of the file to parse.
  * @returns The parsed Puzzle object.
  * @throws Error if the file extension is not supported.
  */
-export function parser(path: PathOrFileDescriptor): Puzzle {
+export function parser(path: string | URL): Puzzle {
+  const pathString = path instanceof URL ? fileURLToPath(path) : path
   const input = readFileSync(path, 'utf-8')
-  const extName = extname(path.toString()).replace('.', '')
+  const extName = extname(pathString).replace('.', '')
 
   switch (extName) {
     case 'non':

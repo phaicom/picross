@@ -14,20 +14,15 @@
   "dependencies": {
     "@picross/core": "workspace:*",
     "@picross/shared": "workspace:*",
-    "vue": "catalog:",
-    "vue-router": "catalog:"
+    "vue": "catalog:"
   },
   "devDependencies": {
     "@iconify-json/ph": "catalog:",
     "@nuxt/image": "catalog:",
-    "@nuxt/test-utils": "catalog:",
     "@pinia/nuxt": "catalog:",
     "@unocss/nuxt": "catalog:",
-    "@vue/test-utils": "catalog:",
-    "happy-dom": "catalog:",
     "nuxt": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
     "vue-tsc": "catalog:"
   }
 }
