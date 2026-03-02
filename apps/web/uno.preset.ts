@@ -2,8 +2,8 @@ import {
   definePreset,
   presetAttributify,
   presetIcons,
-  presetUno,
   presetWebFonts,
+  presetWind4,
 } from 'unocss'
 
 export default definePreset({
@@ -72,11 +72,11 @@ export default definePreset({
     },
   },
   presets: [
-    presetUno(),
+    presetWind4(),
     presetIcons(),
     presetAttributify(),
     presetWebFonts({
-      provider: 'bunny',
+      provider: 'google',
       fonts: {
         inter: {
           name: 'Inter',

@@ -3,7 +3,8 @@
   "globalDependencies": [
     "**/.env.*local"
   ],
-  "pipeline": {
+  "ui": "tui",
+  "tasks": {
     "build": {
       "dependsOn": [
         "^build"
