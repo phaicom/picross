@@ -1,11 +1,13 @@
 import type { Clues, RowOrColumnClues } from '@picross/shared'
 import { combination, range } from '@picross/shared'
-import { uniq, zip } from 'lodash-es'
 
 export type SolverStatus = 'solved' | 'stalled' | 'invalid'
 
 export interface SolveOptions {
   maxIterations?: number
+  backtracking?: boolean
+  maxBacktrackNodes?: number
+  timeoutMs?: number
 }
 
 export interface SolverInitOptions extends SolveOptions {
@@ -18,11 +20,37 @@ export interface SolveResult {
   solved: boolean
   status: SolverStatus
   iterations: number
+  backtrackNodes: number
+  timedOut: boolean
+}
+
+interface SolverState {
+  board: number[][]
+  rowsDone: number[]
+  colsDone: number[]
+  rowsPoss: number[][][]
+  colsPoss: number[][][]
+  solveSteps: number[][][]
+}
+
+interface SearchContext {
+  maxIterations: number
+  maxBacktrackNodes: number
+  deadline: number
+  iterations: number
+  backtrackNodes: number
+  timedOut: boolean
+}
+
+type SearchOutcome = 'solved' | 'invalid' | 'stalled'
+
+interface SearchResult {
+  outcome: SearchOutcome
+  state: SolverState
 }
 
 /**
- * The SimpleSolver class represents a solver for a picross puzzle.
- * It uses a simple algorithm to fill in the cells of the puzzle based on the given clues.
+ * Deterministic picross solver with bounded backtracking fallback.
  */
 export class SimpleSolver {
   clues: Clues
@@ -33,10 +61,6 @@ export class SimpleSolver {
   solveSteps: number[][][]
   status: SolverStatus
 
-  /**
-   * Creates an instance of the SimpleSolver class.
-   * @param clues - The clues object containing the row and column clues.
-   */
   constructor(clues: Clues, options: SolverInitOptions = {}) {
     this.clues = clues
     const numRows = clues.rows.length
@@ -53,142 +77,268 @@ export class SimpleSolver {
   }
 
   solve(options: SolveOptions = {}): SolveResult {
-    this.initializeState()
-
     const numRows = this.clues.rows.length
     const numCols = this.clues.cols.length
+    this.initializeState()
 
     const rowsPoss = this.createPossibilities(this.clues.rows, numCols)
     const colsPoss = this.createPossibilities(this.clues.cols, numRows)
+    const state: SolverState = {
+      board: this.cloneBoard(this.board),
+      rowsDone: [...this.rowsDone],
+      colsDone: [...this.colsDone],
+      rowsPoss,
+      colsPoss,
+      solveSteps: [],
+    }
 
     if (this.hasInvalidPossibilities(rowsPoss) || this.hasInvalidPossibilities(colsPoss)) {
       this.status = 'invalid'
-      return this.createResult(0)
+      this.applyFinalState(state)
+      return this.createResult(0, 0, false)
     }
 
     const maxIterations = options.maxIterations ?? Math.max(numRows * numCols * 4, 1)
-    let iterations = 0
-
-    while (!this.solved && iterations < maxIterations) {
-      iterations += 1
-      let madeProgress = false
-      const lowestRow = this.selectIndexNotDone(rowsPoss, 1)
-      const lowestCol = this.selectIndexNotDone(colsPoss, 0)
-      const lowest = [...lowestRow, ...lowestCol].sort((a, b) => a[1] - b[1])
-
-      for (const [i, _, isRow] of lowest) {
-        if (this.checkDone(isRow, i))
-          continue
-
-        const poss = isRow ? rowsPoss[i] : colsPoss[i]
-        if (!poss || poss.length === 0) {
-          this.status = 'invalid'
-          return this.createResult(iterations)
-        }
-
-        const uniqueOptions = this.getOnlyOneOption(poss)
-
-        for (const [j, val] of uniqueOptions) {
-          const [rowIndex, colIndex] = isRow ? [i, j] : [j, i]
-          const row = this.board[rowIndex]
-          if (!row)
-            continue
-
-          const current = row[colIndex]
-          if (current === undefined)
-            continue
-
-          if (current === 0) {
-            row[colIndex] = val
-            madeProgress = true
-
-            if (isRow) {
-              const colPoss = colsPoss[colIndex]
-              if (!colPoss) {
-                this.status = 'invalid'
-                return this.createResult(iterations)
-              }
-              colsPoss[colIndex] = this.removePossibilities(colPoss, rowIndex, val)
-              if (colsPoss[colIndex].length === 0) {
-                this.status = 'invalid'
-                return this.createResult(iterations)
-              }
-            }
-            else {
-              const rowPoss = rowsPoss[rowIndex]
-              if (!rowPoss) {
-                this.status = 'invalid'
-                return this.createResult(iterations)
-              }
-              rowsPoss[rowIndex] = this.removePossibilities(rowPoss, colIndex, val)
-              if (rowsPoss[rowIndex].length === 0) {
-                this.status = 'invalid'
-                return this.createResult(iterations)
-              }
-            }
-          }
-        }
-
-        this.updateDone(isRow, i)
-        this.solveSteps.push(this.board.map(row => row.map(cell => (cell === -1 ? 2 : cell))))
-      }
-
-      this.board = this.board.map(row => row.map(cell => (cell === -1 ? 0 : cell)))
-      this.checkSolved()
-
-      if (!madeProgress)
-        break
+    const maxBacktrackNodes = options.maxBacktrackNodes ?? Math.max(numRows * numCols * 64, 1024)
+    const timeoutMs = options.timeoutMs ?? 1000
+    const context: SearchContext = {
+      maxIterations,
+      maxBacktrackNodes,
+      deadline: Date.now() + timeoutMs,
+      iterations: 0,
+      backtrackNodes: 0,
+      timedOut: false,
     }
 
-    this.status = this.solved ? 'solved' : 'stalled'
-    return this.createResult(iterations)
+    const result = this.search(state, context, options.backtracking ?? true)
+    this.applyFinalState(result.state)
+
+    if (result.outcome === 'invalid')
+      this.status = 'invalid'
+    else if (result.outcome === 'solved')
+      this.status = 'solved'
+    else
+      this.status = 'stalled'
+
+    this.solved = this.status === 'solved'
+    return this.createResult(context.iterations, context.backtrackNodes, context.timedOut)
   }
 
-  /**
-   * Creates possibilities for a given number of empty cells, groups, and ones.
-   *
-   * @param numEmpty - The number of empty cells.
-   * @param groups - The number of groups.
-   * @param ones - An array of arrays representing the ones.
-   * @returns An array of arrays representing the possibilities.
-   */
+  private search(state: SolverState, context: SearchContext, allowBacktracking: boolean): SearchResult {
+    const propagateOutcome = this.propagate(state, context)
+    if (propagateOutcome !== 'stalled')
+      return { outcome: propagateOutcome, state }
+
+    if (!allowBacktracking)
+      return { outcome: 'stalled', state }
+
+    if (context.timedOut)
+      return { outcome: 'stalled', state }
+
+    if (context.backtrackNodes >= context.maxBacktrackNodes)
+      return { outcome: 'stalled', state }
+
+    const branch = this.chooseBranch(state)
+    if (!branch)
+      return { outcome: 'invalid', state }
+
+    for (const candidate of branch.candidates) {
+      if (Date.now() > context.deadline) {
+        context.timedOut = true
+        return { outcome: 'stalled', state }
+      }
+
+      if (context.backtrackNodes >= context.maxBacktrackNodes)
+        return { outcome: 'stalled', state }
+
+      context.backtrackNodes += 1
+      const child = this.cloneState(state)
+      if (!this.applyAssignment(child, branch.row, branch.col, candidate))
+        continue
+
+      const searched = this.search(child, context, true)
+      if (searched.outcome === 'solved')
+        return searched
+
+      if (context.timedOut)
+        return { outcome: 'stalled', state }
+    }
+
+    return { outcome: 'invalid', state }
+  }
+
+  private propagate(state: SolverState, context: SearchContext): SearchOutcome {
+    if (this.isSolvedBoard(state.board)) {
+      this.markAllDone(state)
+      return 'solved'
+    }
+
+    while (context.iterations < context.maxIterations) {
+      if (Date.now() > context.deadline) {
+        context.timedOut = true
+        return 'stalled'
+      }
+
+      context.iterations += 1
+      let madeProgress = false
+      const lowestRow = this.selectIndexNotDone(state.rowsPoss, 1, state.rowsDone)
+      const lowestCol = this.selectIndexNotDone(state.colsPoss, 0, state.colsDone)
+      const lowest = [...lowestRow, ...lowestCol].sort((a, b) => a[1] - b[1])
+
+      for (const [index, _, isRow] of lowest) {
+        if (this.checkDone(isRow, index, state.rowsDone, state.colsDone))
+          continue
+
+        const poss = isRow ? state.rowsPoss[index] : state.colsPoss[index]
+        if (!poss || poss.length === 0)
+          return 'invalid'
+
+        const uniqueOptions = this.getOnlyOneOption(poss)
+        for (const [lineCellIndex, val] of uniqueOptions) {
+          const [rowIndex, colIndex] = isRow ? [index, lineCellIndex] : [lineCellIndex, index]
+          const assigned = this.applyAssignment(state, rowIndex, colIndex, val)
+          if (!assigned)
+            return 'invalid'
+          madeProgress = true
+        }
+
+        this.updateDone(state, isRow, index)
+        state.solveSteps.push(this.snapshotStep(state.board))
+      }
+
+      if (this.isSolvedBoard(state.board)) {
+        this.markAllDone(state)
+        return 'solved'
+      }
+
+      if (!madeProgress)
+        return 'stalled'
+    }
+
+    return 'stalled'
+  }
+
+  private chooseBranch(state: SolverState): { row: number, col: number, candidates: number[] } | null {
+    let best: { row: number, col: number, candidates: number[] } | null = null
+
+    for (let row = 0; row < state.board.length; row += 1) {
+      const cells = state.board[row]
+      if (!cells)
+        continue
+
+      for (let col = 0; col < cells.length; col += 1) {
+        if (cells[col] !== 0)
+          continue
+
+        const candidates = this.cellCandidates(state, row, col)
+        if (candidates.length === 0)
+          return null
+
+        if (!best || candidates.length < best.candidates.length)
+          best = { row, col, candidates }
+
+        if (best.candidates.length <= 2)
+          return best
+      }
+    }
+
+    return best
+  }
+
+  private cellCandidates(state: SolverState, row: number, col: number): number[] {
+    const rowPoss = state.rowsPoss[row]
+    const colPoss = state.colsPoss[col]
+    if (!rowPoss || !colPoss || rowPoss.length === 0 || colPoss.length === 0)
+      return []
+
+    const rowVals = new Set<number>()
+    const colVals = new Set<number>()
+
+    for (const possibility of rowPoss) {
+      const value = possibility[col]
+      if (value !== undefined)
+        rowVals.add(value)
+    }
+    for (const possibility of colPoss) {
+      const value = possibility[row]
+      if (value !== undefined)
+        colVals.add(value)
+    }
+
+    const intersection: number[] = []
+    for (const value of rowVals) {
+      if (colVals.has(value))
+        intersection.push(value)
+    }
+
+    return intersection
+  }
+
+  private applyAssignment(state: SolverState, row: number, col: number, val: number): boolean {
+    const rowCells = state.board[row]
+    if (!rowCells)
+      return false
+
+    const current = rowCells[col]
+    if (current === undefined)
+      return false
+
+    if (current === val)
+      return true
+
+    if (current !== 0 && current !== val)
+      return false
+
+    rowCells[col] = val
+
+    const rowPoss = state.rowsPoss[row]
+    const colPoss = state.colsPoss[col]
+    if (!rowPoss || !colPoss)
+      return false
+
+    const nextRowPoss = this.removePossibilities(rowPoss, col, val)
+    const nextColPoss = this.removePossibilities(colPoss, row, val)
+    if (nextRowPoss.length === 0 || nextColPoss.length === 0)
+      return false
+
+    state.rowsPoss[row] = nextRowPoss
+    state.colsPoss[col] = nextColPoss
+    this.updateDone(state, 1, row)
+    this.updateDone(state, 0, col)
+    return true
+  }
+
   private _createPossibilities(numEmpty: number, groups: number, ones: number[][]): number[][] {
     const result: number[][] = []
-    const combinations = combination(Array.from(range(0, groups + numEmpty)), groups)
+    const slots = Array.from(range(0, groups + numEmpty))
 
-    for (const combination of combinations) {
+    for (const selectedSlots of combination(slots, groups)) {
       const selected = Array.from({ length: groups + numEmpty }, () => -1)
       let onesIdx = 0
-      for (const val of combination) {
+      for (const val of selectedSlots) {
         selected[val] = onesIdx
         onesIdx += 1
       }
-      const modifiedSelected = selected
-        .map((val) => {
-          if (val <= -1)
-            return [-1]
+      const line: number[] = []
+      for (const val of selected) {
+        if (val <= -1) {
+          line.push(-1)
+          continue
+        }
 
-          const one = ones[val]
-          if (!one)
-            throw new Error('Invalid possibility index')
+        const one = ones[val]
+        if (!one)
+          throw new Error('Invalid possibility index')
 
-          return [...one, -1]
-        })
-        .reduce((acc, val) => acc.concat(val), [])
-        .slice(0, -1)
-      result.push(modifiedSelected)
+        line.push(...one, -1)
+      }
+      line.pop()
+      result.push(line)
     }
 
     return result
   }
 
-  /**
-   * Creates possibilities for each line in the given ClueRowOrColumn array.
-   *
-   * @param lines - The RowOrColumnClues array representing the lines.
-   * @param numLines - The total number of lines.
-   * @returns An array of possibilities for each line.
-   */
   private createPossibilities(lines: RowOrColumnClues, numLines: number): number[][][] {
     return lines.map((line) => {
       const groups = line.length
@@ -202,96 +352,97 @@ export class SimpleSolver {
     })
   }
 
-  /**
-   * Selects the indices of the possibilities array that are not marked as done.
-   *
-   * @param poss - The array of possibilities.
-   * @param index - The index value.
-   * @returns An array of tuples containing the index, length, and index value for each possibility that is not marked as done.
-   */
-  private selectIndexNotDone(poss: number[][][], index: 0 | 1): Array<[number, number, 0 | 1]> {
-    const lengths = poss.map(p => p.length)
-    const doneArray = index ? this.rowsDone : this.colsDone
-    return lengths.map((length, i) => [i, length, index] as [number, number, 0 | 1]).filter((_, i) => doneArray[i] === 0)
+  private selectIndexNotDone(poss: number[][][], index: 0 | 1, doneArray: number[]): Array<[number, number, 0 | 1]> {
+    const result: Array<[number, number, 0 | 1]> = []
+    for (let i = 0; i < poss.length; i += 1) {
+      if (doneArray[i] === 0)
+        result.push([i, poss[i]?.length ?? 0, index])
+    }
+    return result
   }
 
-  /**
-   * Checks if a row or column is marked as done.
-   *
-   * @param row - The row or column index.
-   * @param index - The index of the row or column.
-   * @returns `true` if the row or column is marked as done, `false` otherwise.
-   */
-  private checkDone(row: 0 | 1, index: number): boolean {
-    return row ? this.rowsDone[index] === 1 : this.colsDone[index] === 1
+  private checkDone(row: 0 | 1, index: number, rowsDone: number[], colsDone: number[]): boolean {
+    return row ? rowsDone[index] === 1 : colsDone[index] === 1
   }
 
-  /**
-   * Returns an array of coordinates and their corresponding unique values
-   * where there is only one possible option in each column of the given 2D array.
-   *
-   * @param vals - The 2D array of numbers.
-   * @returns An array of coordinates and their corresponding unique values.
-   */
   private getOnlyOneOption(vals: number[][]): Array<[number, number]> {
-    const transposedVals = zip(...vals)
-    return transposedVals.flatMap((i, n): Array<[number, number]> => {
-      const uniqueVals = uniq(i)
-      const uniqueVal = uniqueVals[0]
-      if (uniqueVals.length === 1 && uniqueVal !== undefined)
-        return [[n, uniqueVal]]
-
+    if (vals.length === 0)
       return []
-    })
+
+    const width = vals[0]?.length ?? 0
+    const result: Array<[number, number]> = []
+
+    for (let col = 0; col < width; col += 1) {
+      const first = vals[0]?.[col]
+      if (first === undefined)
+        continue
+
+      let unique = true
+      for (let row = 1; row < vals.length; row += 1) {
+        if (vals[row]?.[col] !== first) {
+          unique = false
+          break
+        }
+      }
+
+      if (unique)
+        result.push([col, first])
+    }
+
+    return result
   }
 
-  /**
-   * Removes possibilities from the given array based on the specified index and value.
-   * @param poss - The array of possibilities.
-   * @param index - The index to check in each possibility.
-   * @param val - The value to compare against in each possibility.
-   * @returns A new array with possibilities that have the specified value at the specified index.
-   */
   private removePossibilities(poss: number[][], index: number, val: number): number[][] {
     return poss.filter(p => p[index] === val)
   }
 
-  /**
-   * Updates the state of the board to mark a row or column as done if all its values are non-zero.
-   *
-   * @param isRow - A flag indicating whether the update is for a row (true) or a column (false).
-   * @param index - The index of the row or column to update.
-   */
-  private updateDone(isRow: 0 | 1, index: number): void {
-    let values: number[]
-
+  private updateDone(state: SolverState, isRow: 0 | 1, index: number): void {
     if (isRow) {
-      const row = this.board[index]
-      if (!row)
-        return
-      values = row
-    }
-    else {
-      const colValues = this.board.map(row => row[index])
-      if (colValues.includes(undefined))
-        return
-      values = colValues as number[]
+      const row = state.board[index]
+      if (row && !row.includes(0))
+        state.rowsDone[index] = 1
+      return
     }
 
-    if (!values.includes(0)) {
-      if (isRow)
-        this.rowsDone[index] = 1
-      else
-        this.colsDone[index] = 1
+    for (let row = 0; row < state.board.length; row += 1) {
+      if (state.board[row]?.[index] === 0)
+        return
     }
+    state.colsDone[index] = 1
   }
 
-  /**
-   * Checks if the puzzle is solved by verifying if all rows and columns are marked as done.
-   */
-  private checkSolved(): void {
-    if (!this.solved && this.rowsDone.every(done => done === 1) && this.colsDone.every(done => done === 1))
-      this.solved = true
+  private markAllDone(state: SolverState): void {
+    state.rowsDone.fill(1)
+    state.colsDone.fill(1)
+  }
+
+  private isSolvedBoard(board: number[][]): boolean {
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell === 0)
+          return false
+      }
+    }
+    return true
+  }
+
+  private snapshotStep(board: number[][]): number[][] {
+    return board.map(row => row.map(cell => (cell === -1 ? 2 : cell)))
+  }
+
+  private cloneBoard(board: number[][]): number[][] {
+    return board.map(row => [...row])
+  }
+
+  private cloneState(state: SolverState): SolverState {
+    return {
+      board: state.board.map(row => [...row]),
+      rowsDone: [...state.rowsDone],
+      colsDone: [...state.colsDone],
+      rowsPoss: state.rowsPoss.map(line => line.map(poss => [...poss])),
+      colsPoss: state.colsPoss.map(line => line.map(poss => [...poss])),
+      solveSteps: state.solveSteps.map(step => step.map(row => [...row])),
+    }
   }
 
   private initializeState(): void {
@@ -309,13 +460,26 @@ export class SimpleSolver {
     return possibilities.some(group => group.length === 0)
   }
 
-  private createResult(iterations: number): SolveResult {
+  private applyFinalState(state: SolverState): void {
+    this.rowsDone = [...state.rowsDone]
+    this.colsDone = [...state.colsDone]
+    this.board = this.normalizeBoard(state.board)
+    this.solveSteps = state.solveSteps.map(step => step.map(row => [...row]))
+  }
+
+  private normalizeBoard(board: number[][]): number[][] {
+    return board.map(row => row.map(cell => (cell === 1 ? 1 : 0)))
+  }
+
+  private createResult(iterations: number, backtrackNodes: number, timedOut: boolean): SolveResult {
     return {
       board: this.board.map(row => [...row]),
       solveSteps: this.solveSteps.map(step => step.map(row => [...row])),
       solved: this.solved,
       status: this.status,
       iterations,
+      backtrackNodes,
+      timedOut,
     }
   }
 }

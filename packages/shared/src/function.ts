@@ -56,16 +56,12 @@ function* _combination(ub: number, len: number, cur: number[] = []): IterableIte
  */
 export function* combination<T>(arr: T[], len: number): Iterable<T[]> {
   const length = arr.length
-  const combinations: T[][] = []
-
   for (const index of _combination(length, len)) {
-    combinations.push(index.map((i) => {
+    yield index.map((i) => {
       if (!(i in arr))
         throw new Error(`Index ${i} is out of bounds`)
 
       return arr[i] as T
-    }))
+    })
   }
-
-  yield* combinations
 }

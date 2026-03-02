@@ -29,11 +29,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@picross/shared": "workspace:*",
-    "lodash-es": "catalog:"
+    "@picross/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/lodash-es": "catalog:",
     "esno": "catalog:",
     "typescript": "catalog:",
     "unbuild": "catalog:",
