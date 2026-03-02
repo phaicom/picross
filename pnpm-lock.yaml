@@ -72,7 +72,7 @@ catalogs:
 
 overrides:
   chokidar: ^5.0.0
-  semver: ^7.7.3
+  semver: ^7.7.4
 
 importers:
 
