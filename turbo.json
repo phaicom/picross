@@ -3,6 +3,9 @@
   "globalDependencies": [
     "**/.env.*local"
   ],
+  "globalPassThroughEnv": [
+    "COREPACK_HOME"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
