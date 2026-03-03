@@ -13,7 +13,10 @@
       <!-- Board section -->
       <PuzzleBoard />
       <!-- Cell type choosing section -->
-      <PuzzlePickCellType />
+      <section w-full flex="~ row justify-center items-end gap-3">
+        <PuzzlePickCellType />
+        <PuzzlePreview />
+      </section>
     </div>
   </div>
 </template>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import '@unocss/reset/tailwind.css'
-import './assets/css/base.css'
 </script>
 
 <template>
-  <NuxtPage />
+  <div font-inter text-my-dark-violet-80 tracking-wide h-screen overflow-hidden>
+    <NuxtPage />
+  </div>
 </template>
