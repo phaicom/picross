@@ -42,3 +42,26 @@ pnpm test
 pnpm build
 pnpm preview
 ```
+
+## Deploy
+
+Static deploy (recommended for portfolio hosting):
+
+```bash
+pnpm generate
+```
+
+Generated static files will be in `apps/web/.output/public`.
+
+Node server deploy:
+
+```bash
+pnpm build
+pnpm -C apps/web preview
+```
+
+Production output will be in `apps/web/.output`.
+
+## Engineering Note
+
+The solver combines deterministic line-propagation with bounded backtracking. Presets tune iteration/backtracking/time limits so the UI can trade off speed vs solve depth while remaining responsive.

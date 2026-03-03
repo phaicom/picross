@@ -21,9 +21,9 @@ describe('game core', () => {
     ]
     const puzzle = game.puzzle
     expect(puzzle.catalogue).toBe('picross #001')
-    expect(puzzle.title).toBe('')
-    expect(puzzle.author).toBe('Unknown')
-    expect(puzzle.copyright).toBe('')
+    expect(puzzle.title).toBe('Starter Cross')
+    expect(puzzle.author).toBe('Picross Team')
+    expect(puzzle.copyright).toBe('MIT')
     expect(puzzle.width).toBe(5)
     expect(puzzle.height).toBe(5)
     expect(puzzle.clues).toStrictEqual(expectClues)

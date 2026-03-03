@@ -9,6 +9,13 @@ export default defineNuxtConfig({
   app: {
     head: {
       titleTemplate: 'Picross',
+      meta: [
+        { name: 'description', content: 'Picross puzzle app with deterministic solving and bounded backtracking presets.' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:title', content: 'Picross' },
+        { property: 'og:description', content: 'Play and solve nonogram puzzles with adjustable solver depth.' },
+        { property: 'og:image', content: '/logo.svg' },
+      ],
       htmlAttrs: {
         lang: 'en-US',
       },
@@ -18,13 +25,13 @@ export default defineNuxtConfig({
     },
   },
   typescript: {
-    typeCheck: false,
+    typeCheck: true,
   },
   devtools: { enabled: false },
   vite: {
     build: {
       minify: 'esbuild',
-      cssMinify: 'lightningcss',
+      cssMinify: 'esbuild',
     },
   },
 })

@@ -20,6 +20,14 @@
       "persistent": true
     },
     "preview": {},
+    "generate": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".output/public/**"
+      ]
+    },
     "test": {},
     "typecheck": {}
   }
