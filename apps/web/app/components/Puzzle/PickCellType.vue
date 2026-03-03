@@ -10,9 +10,9 @@ function getCellBorder(cellType: CellTypes) {
 </script>
 
 <template>
-  <section shrink-0>
-    <div p-4 rounded-lg bg-white flex="~ row gap-4" class="[box-shadow:0px_5px_24px_0px_#4b69ff1a]">
-      <div v-for="(cellType, i) in cellTypes" :key="i" text-7 border-2px h-10 w-10 cursor-pointer flex="~ items-center justify-center" :class="getCellBorder(cellType)" @click="pointer.setCellType(cellType)">
+  <section class="shrink-0">
+    <div class="p-4 rounded-lg bg-white flex flex-row gap-4 [box-shadow:0px_5px_24px_0px_#4b69ff1a]">
+      <div v-for="(cellType, i) in cellTypes" :key="i" class="text-[1.75rem] border-2 flex h-10 w-10 cursor-pointer items-center justify-center" :class="getCellBorder(cellType)" @click="pointer.setCellType(cellType)">
         <PuzzleCellType :cell-type="cellType" />
       </div>
     </div>

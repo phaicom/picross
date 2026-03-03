@@ -1,19 +1,12 @@
 <template>
-  <div h-full min-h-0 min-w-0 w-full relative overflow-hidden>
-    <!-- BG Layer -->
+  <div class="h-full min-h-0 min-w-0 w-full relative overflow-hidden">
     <PuzzleBG />
-    <!-- Game Layer -->
     <div
-      grid="~ rows-[max-content_minmax(0,1fr)_max-content]"
-
-      px-6 py-3 gap-3 h-full min-h-0 min-w-0 w-full relative overflow-hidden
+      class="px-6 py-3 gap-3 grid grid-rows-[max-content_minmax(0,1fr)_max-content] h-full min-h-0 min-w-0 w-full relative overflow-hidden"
     >
-      <!-- Timer section -->
       <PuzzleTimer />
-      <!-- Board section -->
       <PuzzleBoard />
-      <!-- Cell type choosing section -->
-      <section w-full flex="~ row justify-center items-end gap-3">
+      <section class="flex flex-row gap-3 w-full items-end justify-center">
         <PuzzlePickCellType />
         <PuzzlePreview />
       </section>

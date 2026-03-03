@@ -43,12 +43,12 @@ function showSelectedCell(row: number, col: number) {
 </script>
 
 <template>
-  <section p-2 rounded-lg bg-white shrink-0 w-34 class="[box-shadow:0px_5px_24px_0px_#4b69ff1a]">
-    <div text="[10px] my-gray" leading-none mb-1.5 uppercase tracking="[0.08em]">
+  <section class="p-2 rounded-lg bg-white shrink-0 w-34 [box-shadow:0px_5px_24px_0px_#4b69ff1a]">
+    <div class="text-[10px] text-my-gray leading-none tracking-[0.08em] mb-1.5 uppercase">
       Preview
     </div>
-    <div p-1 border border-cell rounded-md class="bg-my-light-violet-10/30">
-      <div gap-px grid :style="previewGridStyle">
+    <div class="p-1 border border-cell rounded-md bg-my-light-violet-10/30">
+      <div class="gap-px grid" :style="previewGridStyle">
         <div
           v-for="(cell, index) in previewCells"
           :key="index"

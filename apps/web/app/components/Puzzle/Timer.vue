@@ -55,25 +55,25 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section p="[10px]" rounded-xl bg="my-light-violet-10 [url('/timer-bg.svg')] cover bottom no-repeat" w-full select-none shadow="[0_4px_14px_0_#4b69ff17]">
-    <div flex="~ items-center" gap-2>
-      <div text="[16px] my-dark-violet-70" leading="[30px]" tracking="[0.02em]" font-700 px="[10px]" border="~ my-light-violet-20" rounded-lg bg-white h-8 min-w="[100px]" tabular-nums>
+  <section class="p-[10px] rounded-xl bg-[url('/timer-bg.svg')] bg-my-light-violet-10 w-full select-none shadow-[0_4px_14px_0_#4b69ff17] bg-cover bg-bottom bg-no-repeat">
+    <div class="flex gap-2 items-center">
+      <div class="text-[16px] text-my-dark-violet-70 leading-[30px] tracking-[0.02em] font-bold px-[10px] border border-my-light-violet-20 rounded-lg bg-white h-8 min-w-[100px] tabular-nums">
         {{ time }}
       </div>
-      <div ml-auto flex="~ items-center" gap-1.5>
-        <button text="[11px] white" leading-none tracking="[0.06em]" font-700 px="[10px]" rounded-lg bg="my-blue hover:my-blue-60 active:my-blue-120" h-8 min-w="[62px]" uppercase transition-colors class="disabled:opacity-60 disabled:cursor-not-allowed" :disabled="puzzle.isStartSolver" @click="startSolver()">
-          <span v-if="puzzle.isStartSolver" i-ph-spinner-bold text-base animate-spin />
+      <div class="ml-auto flex gap-1.5 items-center">
+        <button class="text-[11px] text-white leading-none tracking-[0.06em] font-bold px-[10px] rounded-lg bg-my-blue h-8 min-w-[62px] uppercase transition-colors active:bg-my-blue-120 hover:bg-my-blue-60 disabled:opacity-60 disabled:cursor-not-allowed" :disabled="puzzle.isStartSolver" @click="startSolver()">
+          <span v-if="puzzle.isStartSolver" class="i-ph-spinner-bold text-base animate-spin" />
           <span v-else>Solve</span>
         </button>
-        <button text="[11px] white" leading-none tracking="[0.06em]" font-700 px="[10px]" rounded-lg bg="my-red hover:my-red-60 active:my-red-120" h-8 min-w="[62px]" uppercase transition-colors @click="resetBoard()">
+        <button class="text-[11px] text-white leading-none tracking-[0.06em] font-bold px-[10px] rounded-lg bg-my-red h-8 min-w-[62px] uppercase transition-colors active:bg-my-red-120 hover:bg-my-red-60" @click="resetBoard()">
           Reset
         </button>
       </div>
     </div>
 
-    <div mt-2 grid="~ cols-[minmax(0,1fr)_auto] items-center" gap-1.5>
+    <div class="mt-2 gap-1.5 grid grid-cols-[minmax(0,1fr)_auto] items-center">
       <select
-        text="[11px] my-dark-violet-70" leading-none font-600 px-2 border="~ my-light-violet-20" rounded-lg bg-white h="[30px]" min-w-0 w-full
+        class="text-[11px] text-my-dark-violet-70 leading-none font-semibold px-2 border border-my-light-violet-20 rounded-lg bg-white h-[30px] min-w-0 w-full"
         :disabled="puzzle.isStartSolver"
         :value="puzzle.currentPuzzleIndex"
         @change="puzzle.selectPuzzle(Number(($event.target as HTMLSelectElement).value))"
@@ -83,11 +83,11 @@ onUnmounted(() => {
         </option>
       </select>
 
-      <div p="[2px]" border="~ my-light-violet-20" rounded-lg bg-white flex="~ items-center" gap-1>
+      <div class="p-[2px] border border-my-light-violet-20 rounded-lg bg-white flex gap-1 items-center">
         <button
           v-for="preset in presets"
           :key="preset.id"
-          text="[10px] my-dark-violet-70" tracking="[0.04em]" font-700 px-2 rounded-md bg-transparent h-6 min-w-12 uppercase transition-colors class="disabled:opacity-60 disabled:cursor-not-allowed"
+          class="text-[10px] text-my-dark-violet-70 tracking-[0.04em] font-bold px-2 rounded-md bg-transparent h-6 min-w-12 uppercase transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           :class="{ 'bg-my-blue text-white': puzzle.solverPreset === preset.id }"
           :disabled="puzzle.isStartSolver"
           @click="puzzle.setSolverPreset(preset.id)"
@@ -97,7 +97,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <p v-if="isHydrated && puzzle.solverTimedOut" text="[10px] my-red" leading-none font-600 mt-1>
+    <p v-if="isHydrated && puzzle.solverTimedOut" class="text-[10px] text-my-red leading-none font-semibold mt-1">
       Timed out on this preset
     </p>
   </section>

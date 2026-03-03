@@ -7,7 +7,7 @@ const prop = defineProps<{
 </script>
 
 <template>
-  <div v-if="prop.cellType === CellTypes.Fill" bg-my-dark-violet-70 h-full w-full />
-  <div v-else-if="prop.cellType === CellTypes.Cross" i-ph-x-bold text-my-red />
-  <div v-else-if="prop.cellType === CellTypes.Circle" i-ph-circle-bold text-my-sky-blue />
+  <div v-if="prop.cellType === CellTypes.Fill" class="bg-my-dark-violet-70 h-full w-full" />
+  <div v-else-if="prop.cellType === CellTypes.Cross" class="i-ph-x-bold text-my-red" />
+  <div v-else-if="prop.cellType === CellTypes.Circle" class="i-ph-circle-bold text-my-sky-blue" />
 </template>
