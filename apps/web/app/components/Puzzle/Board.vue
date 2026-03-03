@@ -80,7 +80,7 @@ const colHintCompletion = computed(() => {
       </PuzzleTemp>
     </Transition>
     <!-- board wrapper -->
-    <div flex="~ justify-center" h-full max-w-full min-h-0 w-full select-none items-start overflow-auto>
+    <div flex="~ justify-start" h-full max-w-full min-h-0 w-full select-none items-start overflow-auto>
       <div grid="~ cols-[max-content_max-content]" w-max font="400">
         <!-- hints rows -->
         <div flex="~ col" bg-white min-w-min rounded="tl-lg bl-lg" class="[box-shadow:0px_5px_24px_0px_#4b69ff1a]">
