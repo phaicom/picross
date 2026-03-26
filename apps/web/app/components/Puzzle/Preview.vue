@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { CellTypes } from '@picross/shared'
 
-const pointer = usePointerStore()
-const puzzle = usePuzzleStore()
+const puzzleDomain = usePuzzleDomainStore()
+const puzzleUi = usePuzzleUiStore()
 
 const previewCells = computed(() => {
-  const rows = puzzle.height
-  const cols = puzzle.width
+  const rows = puzzleDomain.height
+  const cols = puzzleDomain.width
   const total = rows * cols
 
   return Array.from({ length: total }, (_, index) => {
@@ -15,13 +15,13 @@ const previewCells = computed(() => {
     return {
       row,
       col,
-      cellType: puzzle.grid[row]?.[col] ?? CellTypes.Empty,
+      cellType: puzzleDomain.grid[row]?.[col] ?? CellTypes.Empty,
     }
   })
 })
 
 const previewGridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(${Math.max(puzzle.width, 1)}, minmax(0, 1fr))`,
+  gridTemplateColumns: `repeat(${Math.max(puzzleDomain.width, 1)}, minmax(0, 1fr))`,
 }))
 
 function getPreviewCellClass(cellType: CellTypes) {
@@ -38,12 +38,12 @@ function getPreviewCellClass(cellType: CellTypes) {
 }
 
 function showSelectedCell(row: number, col: number) {
-  return pointer.row === row && pointer.col === col
+  return puzzleUi.row === row && puzzleUi.col === col
 }
 </script>
 
 <template>
-  <section class="p-2 rounded-lg bg-white shrink-0 w-34 [box-shadow:0px_5px_24px_0px_#4b69ff1a]">
+  <section class="p-2 rounded-lg bg-white shrink-0 w-34 [box-shadow:0px_5px_24px_0px_#4b69ff1a]" aria-label="Board preview">
     <div class="text-[10px] text-my-gray leading-none tracking-[0.08em] mb-1.5 uppercase">
       Preview
     </div>

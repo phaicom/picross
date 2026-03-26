@@ -8,12 +8,14 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test": "vitest --run --config vitest.config.ts",
     "typecheck": "nuxt typecheck",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@picross/core": "workspace:*",
     "@picross/shared": "workspace:*",
+    "pinia": "catalog:",
     "vue": "catalog:"
   },
   "devDependencies": {
@@ -21,8 +23,11 @@
     "@nuxt/image": "catalog:",
     "@pinia/nuxt": "catalog:",
     "@unocss/nuxt": "catalog:",
+    "happy-dom": "catalog:",
     "nuxt": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
     "vue-tsc": "catalog:"
   }
 }

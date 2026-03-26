@@ -1,8 +1,26 @@
 import type { Puzzle } from '@picross/shared'
 import type { SolverStatus } from './solver'
-import { SimpleSolver } from './solver'
 
 export * from './solver'
+
+function createEmptyPuzzle(): Puzzle {
+  return {
+    catalogue: '',
+    title: '',
+    author: '',
+    copyright: '',
+    width: 0,
+    height: 0,
+    clues: {
+      rows: [],
+      cols: [],
+    },
+  }
+}
+
+function createEmptyGrid(height: number, width: number): number[][] {
+  return Array.from({ length: height }).map(() => Array.from({ length: width }).map(() => 0))
+}
 
 export class Game {
   puzzle: Puzzle
@@ -12,18 +30,7 @@ export class Game {
   solverStatus: SolverStatus
 
   constructor(puzzle?: Puzzle) {
-    this.puzzle = {
-      catalogue: '',
-      title: '',
-      author: '',
-      copyright: '',
-      width: 0,
-      height: 0,
-      clues: {
-        rows: [],
-        cols: [],
-      },
-    }
+    this.puzzle = createEmptyPuzzle()
 
     this.grid = []
     this.solution = []
@@ -35,18 +42,7 @@ export class Game {
   }
 
   reset() {
-    this.puzzle = {
-      catalogue: '',
-      title: '',
-      author: '',
-      copyright: '',
-      width: 0,
-      height: 0,
-      clues: {
-        rows: [],
-        cols: [],
-      },
-    }
+    this.puzzle = createEmptyPuzzle()
 
     this.grid = []
     this.solution = []
@@ -55,17 +51,10 @@ export class Game {
   }
 
   setPuzzle(puzzle: Puzzle) {
-    // set puzzle
     this.puzzle = puzzle
-    // generate grid base on width and height
-    this.grid = Array.from({ length: this.puzzle.height }, () => Array.from({ length: this.puzzle.width }, () => 0))
-
-    // generate solution base on puzzle clues
-    // solver function goes here
-    const solver = new SimpleSolver(this.puzzle.clues, { autoSolve: false })
-    const result = solver.solve()
-    this.solution = result.board
-    this.solveSteps = result.solveSteps
-    this.solverStatus = result.status
+    this.grid = createEmptyGrid(this.puzzle.height, this.puzzle.width)
+    this.solution = []
+    this.solveSteps = []
+    this.solverStatus = 'stalled'
   }
 }

@@ -51,6 +51,14 @@ interface SearchResult {
   state: SolverState
 }
 
+function createFilledArray(length: number, value: number): number[] {
+  return Array.from({ length }).map(() => value)
+}
+
+function createEmptyBoard(numRows: number, numCols: number): number[][] {
+  return Array.from({ length: numRows }).map(() => Array.from({ length: numCols }).map(() => 0))
+}
+
 /**
  * Deterministic picross solver with bounded backtracking fallback.
  */
@@ -67,10 +75,10 @@ export class SimpleSolver {
     this.clues = clues
     const numRows = clues.rows.length
     const numCols = clues.cols.length
-    this.rowsDone = Array.from({ length: numRows }, () => 0)
-    this.colsDone = Array.from({ length: numCols }, () => 0)
+    this.rowsDone = createFilledArray(numRows, 0)
+    this.colsDone = createFilledArray(numCols, 0)
     this.solved = false
-    this.board = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => 0))
+    this.board = createEmptyBoard(numRows, numCols)
     this.solveSteps = []
     this.status = 'stalled'
 
@@ -318,7 +326,7 @@ export class SimpleSolver {
     const slots = Array.from(range(0, groups + numEmpty))
 
     for (const selectedSlots of combination(slots, groups)) {
-      const selected = Array.from({ length: groups + numEmpty }, () => -1)
+      const selected = createFilledArray(groups + numEmpty, -1)
       let onesIdx = 0
       for (const val of selectedSlots) {
         selected[val] = onesIdx
@@ -348,7 +356,7 @@ export class SimpleSolver {
     return lines.map((line) => {
       const groups = line.length
       const numEmpty = numLines - line.reduce((a, b) => a + b, 0) - groups + 1
-      const ones = line.map(cell => Array.from({ length: cell }, () => 1))
+      const ones = line.map(cell => createFilledArray(cell, 1))
 
       if (numEmpty < 0)
         return []
@@ -454,11 +462,11 @@ export class SimpleSolver {
   private initializeState(): void {
     const numRows = this.clues.rows.length
     const numCols = this.clues.cols.length
-    this.rowsDone = Array.from({ length: numRows }, () => 0)
-    this.colsDone = Array.from({ length: numCols }, () => 0)
+    this.rowsDone = createFilledArray(numRows, 0)
+    this.colsDone = createFilledArray(numCols, 0)
     this.solved = false
     this.status = 'stalled'
-    this.board = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => 0))
+    this.board = createEmptyBoard(numRows, numCols)
     this.solveSteps = []
   }
 

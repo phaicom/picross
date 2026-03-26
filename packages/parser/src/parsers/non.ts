@@ -1,6 +1,10 @@
 import type { Puzzle } from '@picross/shared'
 import { BaseParser } from './base'
 
+const WINDOWS_NEWLINE_PATTERN = /\r\n/g
+const SECTION_SEPARATOR_PATTERN = /\n\s*\n/
+const FIRST_WHITESPACE_PATTERN = /\s/
+
 /**
  * Represents a parser for Non files.
  */
@@ -15,8 +19,8 @@ export class NonParser extends BaseParser {
   parse(input: string): Puzzle {
     this.resetPuzzle()
 
-    const normalizedInput = input.replace(/\r\n/g, '\n')
-    const sections = normalizedInput.split(/\n\s*\n/).filter(section => section.trim().length > 0)
+    const normalizedInput = input.replace(WINDOWS_NEWLINE_PATTERN, '\n')
+    const sections = normalizedInput.split(SECTION_SEPARATOR_PATTERN).filter(section => section.trim().length > 0)
     if (sections.length < 3)
       throw new Error('Incorrect non file structure')
 
@@ -46,7 +50,7 @@ export class NonParser extends BaseParser {
   private parseDataSection(data: string): void {
     const lines = data.split('\n').map(line => line.trim()).filter(Boolean)
     for (const [index, line] of lines.entries()) {
-      const separatorIndex = line.search(/\s/)
+      const separatorIndex = line.search(FIRST_WHITESPACE_PATTERN)
       if (separatorIndex <= 0)
         throw new Error(`Incorrect non file key at metadata line ${index + 1}`)
 
