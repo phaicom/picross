@@ -1,9 +1,8 @@
 import type { Puzzle } from '@picross/shared'
-import { Game } from '@picross/core'
 import { CellTypes, sample } from '@picross/shared'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { cloneGrid, clonePuzzleClues, createEmptyGrid, formatDifficulty, isBoardSolved, normalizeSolvedGrid } from '../utils/puzzle'
+import { cloneGrid, clonePuzzleClues, createEmptyGrid, createEmptyPuzzle, formatDifficulty, isBoardSolved, normalizeSolvedGrid } from '../utils/puzzle'
 
 interface PuzzleChoice {
   index: number
@@ -31,21 +30,22 @@ export const usePuzzleDomainStore = defineStore('puzzle-domain', () => {
 
   const isWin = computed(() => isBoardSolved(grid.value, clues.value))
 
-  function applyGame(game: Game) {
-    catalogue.value = game.puzzle.catalogue
-    title.value = game.puzzle.title
-    author.value = game.puzzle.author
-    copyright.value = game.puzzle.copyright
-    width.value = game.puzzle.width
-    height.value = game.puzzle.height
-    clues.value = clonePuzzleClues(game.puzzle)
-    grid.value = cloneGrid(game.grid)
-    solution.value = cloneGrid(game.solution)
+  function applyPuzzle(nextPuzzle?: Puzzle) {
+    const puzzle = nextPuzzle ?? createEmptyPuzzle()
+
+    catalogue.value = puzzle.catalogue
+    title.value = puzzle.title
+    author.value = puzzle.author
+    copyright.value = puzzle.copyright
+    width.value = puzzle.width
+    height.value = puzzle.height
+    clues.value = clonePuzzleClues(puzzle)
+    grid.value = createEmptyGrid(puzzle.height, puzzle.width)
+    solution.value = []
   }
 
   function reset(puzzle?: Puzzle) {
-    const game = puzzle ? new Game(puzzle) : new Game()
-    applyGame(game)
+    applyPuzzle(puzzle)
   }
 
   function initialize() {

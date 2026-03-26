@@ -1,6 +1,17 @@
+catalogMode: prefer
+cleanupUnusedCatalogs: true
+ignoreWorkspaceRootCheck: true
+linkWorkspacePackages: true
+shamefullyHoist: true
+shellEmulator: true
+strictPeerDependencies: false
+trustPolicy: no-downgrade
 packages:
   - apps/*
   - packages/*
+overrides:
+  chokidar: ^5.0.0
+  semver: ^7.7.4
 catalog:
   '@antfu/eslint-config': ^7.7.3
   '@commitlint/cli': ^20.5.0
@@ -10,6 +21,7 @@ catalog:
   '@pinia/nuxt': ^0.11.3
   '@unocss/eslint-plugin': ^66.6.7
   '@unocss/nuxt': ^66.6.7
+  '@vue/test-utils': ^2.4.6
   eslint: ^10.1.0
   eslint-plugin-format: ^2.0.1
   esno: ^4.8.0
@@ -25,16 +37,5 @@ catalog:
   vitest: ^4.1.2
   vue: ^3.5.31
   vue-tsc: ^3.2.6
-catalogMode: prefer
-cleanupUnusedCatalogs: true
-ignoreWorkspaceRootCheck: true
-linkWorkspacePackages: true
 onlyBuiltDependencies:
   - simple-git-hooks
-overrides:
-  chokidar: ^5.0.0
-  semver: ^7.7.4
-shamefullyHoist: true
-shellEmulator: true
-strictPeerDependencies: false
-trustPolicy: no-downgrade

@@ -5,6 +5,21 @@ import { CellTypes } from '@picross/shared'
 export type SolverPreset = 'fast' | 'normal' | 'deep'
 type Difficulty = NonNullable<Puzzle['difficulty']>
 
+export function createEmptyPuzzle(): Puzzle {
+  return {
+    catalogue: '',
+    title: '',
+    author: '',
+    copyright: '',
+    width: 0,
+    height: 0,
+    clues: {
+      rows: [],
+      cols: [],
+    },
+  }
+}
+
 export function cloneGrid(grid: number[][]): number[][] {
   return grid.map(row => [...row])
 }

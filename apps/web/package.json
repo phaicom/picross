@@ -23,6 +23,7 @@
     "@nuxt/image": "catalog:",
     "@pinia/nuxt": "catalog:",
     "@unocss/nuxt": "catalog:",
+    "@vue/test-utils": "catalog:",
     "happy-dom": "catalog:",
     "nuxt": "catalog:",
     "typescript": "catalog:",

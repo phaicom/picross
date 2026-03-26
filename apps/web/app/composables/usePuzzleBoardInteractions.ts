@@ -1,6 +1,6 @@
 import type { ComponentPublicInstance } from 'vue'
 import { CellTypes } from '@picross/shared'
-import { nextTick, ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { usePuzzleDomainStore } from '../stores/puzzle-domain'
 import { usePuzzleSolverStore } from '../stores/puzzle-solver'
 import { usePuzzleUiStore } from '../stores/puzzle-ui'
@@ -35,29 +35,44 @@ export function usePuzzleBoardInteractions() {
   const puzzleDomain = usePuzzleDomainStore()
   const puzzleSolver = usePuzzleSolverStore()
   const puzzleUi = usePuzzleUiStore()
-  const cellRefs = ref<HTMLButtonElement[]>([])
+  const cellRefs = ref<Array<HTMLButtonElement | undefined>>([])
+
+  watch(() => [puzzleDomain.height, puzzleDomain.width], () => {
+    cellRefs.value = []
+  })
 
   function showSelectedCell(row: number, col: number) {
     return puzzleUi.row === row && puzzleUi.col === col
+  }
+
+  function getCellTabIndex(row: number, col: number) {
+    return showSelectedCell(row, col) ? 0 : -1
   }
 
   function getCell(row: number, col: number): CellTypes {
     return puzzleDomain.getCell(row, col)
   }
 
-  function setCell(row: number, col: number, type: CellTypes) {
+  function setCell(row: number, col: number) {
     if (puzzleSolver.isBusy)
       return
 
     puzzleUi.setPointLocation(row, col)
-    puzzleDomain.setCell(row, col, type)
+    puzzleDomain.setCell(row, col, puzzleUi.cellType)
   }
 
   function setCellRef(element: Element | ComponentPublicInstance | null, row: number, col: number) {
+    const index = (row * puzzleDomain.width) + col
+
+    if (element === null) {
+      cellRefs.value[index] = undefined
+      return
+    }
+
     if (!(element instanceof HTMLButtonElement))
       return
 
-    cellRefs.value[(row * puzzleDomain.width) + col] = element
+    cellRefs.value[index] = element
   }
 
   function focusCell(row: number, col: number) {
@@ -106,7 +121,7 @@ export function usePuzzleBoardInteractions() {
       case ' ':
       case 'Enter':
         event.preventDefault()
-        setCell(row, col, puzzleUi.cellType)
+        setCell(row, col)
     }
   }
 
@@ -119,6 +134,7 @@ export function usePuzzleBoardInteractions() {
     cellRefs,
     getCell,
     getCellLabel,
+    getCellTabIndex,
     onCellFocus,
     onCellKeydown,
     setCell,
