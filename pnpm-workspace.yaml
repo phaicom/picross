@@ -13,26 +13,26 @@ overrides:
   chokidar: ^5.0.0
   semver: ^7.7.4
 catalog:
-  '@antfu/eslint-config': ^7.6.1
-  '@commitlint/cli': ^20.4.2
-  '@commitlint/config-conventional': ^20.4.2
+  '@antfu/eslint-config': ^7.7.3
+  '@commitlint/cli': ^20.5.0
+  '@commitlint/config-conventional': ^20.5.0
   '@iconify-json/ph': ^1.2.2
   '@nuxt/image': ^2.0.0
   '@pinia/nuxt': ^0.11.3
-  '@unocss/eslint-plugin': ^66.6.3
-  '@unocss/nuxt': ^66.6.2
-  eslint: ^10.0.2
+  '@unocss/eslint-plugin': ^66.6.7
+  '@unocss/nuxt': ^66.6.7
+  eslint: ^10.1.0
   eslint-plugin-format: ^2.0.1
   esno: ^4.8.0
-  lint-staged: ^16.3.1
-  nuxt: ^4.3.1
+  lint-staged: ^16.4.0
+  nuxt: ^4.4.2
   simple-git-hooks: ^2.13.1
-  turbo: ^2.8.12
-  typescript: ^5.9.3
+  turbo: ^2.8.20
+  typescript: ^6.0.2
   unbuild: ^3.6.1
-  vite: ^7.3.1
-  vitest: ^4.0.18
-  vue: ^3.5.29
-  vue-tsc: ^3.2.5
+  vite: ^8.0.3
+  vitest: ^4.1.2
+  vue: ^3.5.31
+  vue-tsc: ^3.2.6
 onlyBuiltDependencies:
   - simple-git-hooks
